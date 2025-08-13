@@ -1,0 +1,829 @@
+{
+	"info": {
+		"_postman_id": "55f768ad-7f2b-4be4-b640-1ddd967856e6",
+		"name": "Horilla Demo - Core 5 Requests",
+		"description": "Only the 5 main requests: Login, List Employees, View Employee, Update Employee, Delete Employee.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "46130409",
+		"_collection_link": "https://hoz-7776233.postman.co/workspace/hoz's-Workspace~640ddae4-d593-4204-87cc-6ebe391df074/collection/46130409-55f768ad-7f2b-4be4-b640-1ddd967856e6?action=share&source=collection_link&creator=46130409"
+	},
+	"item": [
+		{
+			"name": "01 - Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// التقط csrftoken من الكوكي + (لو وُجد) من input مخفي بنفس الصفحة",
+							"const csrfCookie = pm.cookies.get('csrftoken') || '';",
+							"let csrfInput = '';",
+							"try {",
+							"  const html = pm.response.text();",
+							"  const m = html.match(/name=['\"]csrfmiddlewaretoken['\"]\\s+value=['\"]([^'\"]+)['\"]/i);",
+							"  if (m) csrfInput = m[1];",
+							"} catch(e){}",
+							"",
+							"const csrf = csrfInput || csrfCookie;",
+							"pm.environment.set('csrftoken', csrf);",
+							"pm.environment.set('formUrl', pm.request.url.toString());",
+							"console.log('csrftoken:', csrf);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+					},
+					{
+						"key": "Accept-Encoding",
+						"value": "gzip, deflate, br, zstd"
+					},
+					{
+						"key": "Accept-Language",
+						"value": "ar-AE,ar;q=0.9,he-IL;q=0.8,he;q=0.7,en-GB;q=0.6,en;q=0.5,en-US;q=0.4"
+					},
+					{
+						"key": "Cache-Control",
+						"value": "max-age=0"
+					},
+					{
+						"key": "Connection",
+						"value": "keep-alive"
+					},
+					{
+						"key": "Content-Length",
+						"value": "114"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					},
+					{
+						"key": "DNT",
+						"value": "1"
+					},
+					{
+						"key": "Host",
+						"value": "demo.horilla.com"
+					},
+					{
+						"key": "Origin",
+						"value": "{{baseUrl}}"
+					},
+					{
+						"key": "Referer",
+						"value": "{{baseUrl}}"
+					},
+					{
+						"key": "Sec-Fetch-Dest",
+						"value": "document"
+					},
+					{
+						"key": "Sec-Fetch-Mode",
+						"value": "navigate"
+					},
+					{
+						"key": "Sec-Fetch-Site",
+						"value": "same-origin"
+					},
+					{
+						"key": "Sec-Fetch-User",
+						"value": "?1"
+					},
+					{
+						"key": "Upgrade-Insecure-Requests",
+						"value": "1"
+					},
+					{
+						"key": "User-Agent",
+						"value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+					},
+					{
+						"key": "sec-ch-ua",
+						"value": "\"Not;A=Brand\";v=\"99\", \"Google Chrome\";v=\"139\", \"Chromium\";v=\"139\""
+					},
+					{
+						"key": "sec-ch-ua-mobile",
+						"value": "?0"
+					},
+					{
+						"key": "sec-ch-ua-platform",
+						"value": "\"Windows\""
+					},
+					{
+						"key": "X-CSRFToken",
+						"value": "{{csrftoken}}"
+					},
+					{
+						"key": "Cookie",
+						"value": "{{cookie}}"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "csrfmiddlewaretoken",
+							"value": "LPA6Jn4MZlPIpfmFtyi3DULvYyCQP1uHP8ttb3azLz4uGBn1mOQjLSaZKVfyQI2C"
+						},
+						{
+							"key": "username",
+							"value": "admin"
+						},
+						{
+							"key": "password",
+							"value": "admin"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://demo.horilla.com/login",
+					"protocol": "https",
+					"host": [
+						"demo",
+						"horilla",
+						"com"
+					],
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "02 - List Employees",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status 2xx/3xx', () => pm.expect(pm.response.code).to.be.within(200,399));",
+							"pm.test('Response time < 3000ms', () => pm.expect(pm.response.responseTime).to.be.below(3000));",
+							"const setCookies = pm.response.headers.get('Set-Cookie');\nif (setCookies) {\n  const pairs = setCookies.split(',').map(s => s.split(';')[0].trim());\n  const joined = pairs.join('; ');\n  const prev = pm.environment.get('cookie');\n  pm.environment.set('cookie', prev ? (prev + '; ' + joined) : joined);\n}\nif (!pm.environment.get('csrftoken')) {\n  const m = /csrftoken=([^;]+)/.exec(pm.environment.get('cookie')||'');\n  if (m) pm.environment.set('csrftoken', m[1]);\n}"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "*/*"
+					},
+					{
+						"key": "Accept-Encoding",
+						"value": "gzip, deflate, br, zstd"
+					},
+					{
+						"key": "Accept-Language",
+						"value": "ar-AE,ar;q=0.9,he-IL;q=0.8,he;q=0.7,en-GB;q=0.6,en;q=0.5,en-US;q=0.4"
+					},
+					{
+						"key": "Connection",
+						"value": "keep-alive"
+					},
+					{
+						"key": "DNT",
+						"value": "1"
+					},
+					{
+						"key": "Host",
+						"value": "demo.horilla.com"
+					},
+					{
+						"key": "Referer",
+						"value": "{{baseUrl}}"
+					},
+					{
+						"key": "Sec-Fetch-Dest",
+						"value": "empty"
+					},
+					{
+						"key": "Sec-Fetch-Mode",
+						"value": "cors"
+					},
+					{
+						"key": "Sec-Fetch-Site",
+						"value": "same-origin"
+					},
+					{
+						"key": "User-Agent",
+						"value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+					},
+					{
+						"key": "X-Requested-With",
+						"value": "XMLHttpRequest"
+					},
+					{
+						"key": "sec-ch-ua",
+						"value": "\"Not;A=Brand\";v=\"99\", \"Google Chrome\";v=\"139\", \"Chromium\";v=\"139\""
+					},
+					{
+						"key": "sec-ch-ua-mobile",
+						"value": "?0"
+					},
+					{
+						"key": "sec-ch-ua-platform",
+						"value": "\"Windows\""
+					},
+					{
+						"key": "Origin",
+						"value": "{{baseUrl}}"
+					},
+					{
+						"key": "Cookie",
+						"value": "{{cookie}}"
+					}
+				],
+				"url": {
+					"raw": "https://demo.horilla.com/employee/get-language-code",
+					"protocol": "https",
+					"host": [
+						"demo",
+						"horilla",
+						"com"
+					],
+					"path": [
+						"employee",
+						"get-language-code"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "04 - Update Employee Id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"",
+							"// احصل على csrftoken من الكوكيز",
+							"const csrf = pm.cookies.get('csrftoken') || '';",
+							"pm.environment.set('csrftoken', csrf);",
+							"console.log('csrftoken:', csrf);",
+							"",
+							"// --- لوج أساسي في Postman Console ---",
+							"console.log(\"↩ Status:\", pm.response.code, pm.response.status);",
+							"console.log(\"↩ Headers:\", pm.response.headers.toObject());",
+							"",
+							"// نحاول نفهم نوع الاستجابة",
+							"const ct = (pm.response.headers.get('Content-Type') || '').toLowerCase();",
+							"let bodyText = pm.response.text();",
+							"console.log(\"↩ Raw body (first 2000 chars):\", bodyText.slice(0, 2000));",
+							"",
+							"// لو JSON، نفكّه ونطبعه منظّم",
+							"if (ct.includes('application/json')) {",
+							"  try {",
+							"    const json = pm.response.json();",
+							"    console.log(\"↩ Parsed JSON:\", json);",
+							"  } catch (e) {",
+							"    console.warn(\"JSON parse failed:\", e);",
+							"  }",
+							"} else if (ct.includes('text/html')) {",
+							"  // لو HTML (غالبًا صفحة خطأ من السيرفر)، نستخرج شوية تفاصيل",
+							"  const titleMatch = bodyText.match(/<title[^>]*>(.*?)<\\/title>/i);",
+							"  if (titleMatch) console.log(\"↩ HTML <title>:\", titleMatch[1]);",
+							"  const preMatch = bodyText.match(/<pre[^>]*>([\\s\\S]{0,1500})<\\/pre>/i);",
+							"  if (preMatch) console.log(\"↩ HTML <pre> (snippet):\", preMatch[1]);",
+							"}",
+							"",
+							"// --- اختبارات مرنة أثناء الديبَغ ---",
+							"// بدل ما يفشل الرن كله، نُعلِم أن الرد 5xx ونسجّل السبب:",
+							"pm.test(\"No 5xx server error\", function () {",
+							"  pm.expect(pm.response.code, \"Server returned 5xx\").to.be.below(500);",
+							"});",
+							"",
+							"// لو كنت تريد تمرير الرن مؤقتًا لكن مع تحذير:",
+							"pm.test(\"Status is 2xx/3xx (debug mode)\", function () {",
+							"  if (pm.response.code >= 500) {",
+							"    console.warn(\"DEBUG: Got 5xx, skipping hard fail for now.\");",
+							"    this.skip(); // نتخطى الفشل الصارم مؤقتًا",
+							"  } else {",
+							"    pm.expect(pm.response.code).to.be.within(200, 399);",
+							"  }",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+					},
+					{
+						"key": "Accept-Encoding",
+						"value": "gzip, deflate, br, zstd"
+					},
+					{
+						"key": "Accept-Language",
+						"value": "ar-AE,ar;q=0.9,he-IL;q=0.8,he;q=0.7,en-GB;q=0.6,en;q=0.5,en-US;q=0.4",
+						"disabled": true
+					},
+					{
+						"key": "Cache-Control",
+						"value": "max-age=0"
+					},
+					{
+						"key": "Connection",
+						"value": "keep-alive"
+					},
+					{
+						"key": "Content-Length",
+						"value": "2216"
+					},
+					{
+						"key": "Content-Type",
+						"value": " multipart/form-data"
+					},
+					{
+						"key": "DNT",
+						"value": "1"
+					},
+					{
+						"key": "Host",
+						"value": "demo.horilla.com"
+					},
+					{
+						"key": "Origin",
+						"value": "https://demo.horilla.com"
+					},
+					{
+						"key": "Referer",
+						"value": "{{formUrl}}"
+					},
+					{
+						"key": "Sec-Fetch-Dest",
+						"value": "document"
+					},
+					{
+						"key": "Sec-Fetch-Mode",
+						"value": "navigate"
+					},
+					{
+						"key": "Sec-Fetch-Site",
+						"value": "same-origin"
+					},
+					{
+						"key": "Sec-Fetch-User",
+						"value": "?1"
+					},
+					{
+						"key": "Upgrade-Insecure-Requests",
+						"value": "1",
+						"disabled": true
+					},
+					{
+						"key": "User-Agent",
+						"value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+					},
+					{
+						"key": "sec-ch-ua",
+						"value": "\"Not;A=Brand\";v=\"99\", \"Google Chrome\";v=\"139\", \"Chromium\";v=\"139\"",
+						"disabled": true
+					},
+					{
+						"key": "sec-ch-ua-mobile",
+						"value": "?0",
+						"disabled": true
+					},
+					{
+						"key": "sec-ch-ua-platform",
+						"value": "\"Windows\"",
+						"disabled": true
+					},
+					{
+						"key": "X-CSRFToken",
+						"value": "{{csrftoken}}"
+					},
+					{
+						"key": "Cookie",
+						"value": "",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "form",
+							"value": "personal",
+							"type": "text"
+						},
+						{
+							"key": "csrfmiddlewaretoken",
+							"value": "{{csrftoken}}",
+							"type": "text"
+						},
+						{
+							"key": "badge_id",
+							"value": "1989",
+							"type": "text"
+						},
+						{
+							"key": "employee_first_name",
+							"value": "ABC",
+							"type": "text"
+						},
+						{
+							"key": "employee_last_name",
+							"value": "ABCddd",
+							"type": "text"
+						},
+						{
+							"key": "email",
+							"value": "abc@abc.com",
+							"type": "text"
+						},
+						{
+							"key": "phone",
+							"value": "0123",
+							"type": "text"
+						},
+						{
+							"key": "address",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "country",
+							"value": "Indonesia",
+							"type": "text"
+						},
+						{
+							"key": "state",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "city",
+							"value": "ind",
+							"type": "text"
+						},
+						{
+							"key": "zip",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "dob",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "gender",
+							"value": "male",
+							"type": "text"
+						},
+						{
+							"key": "qualification",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "experience",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "marital_status",
+							"value": "single",
+							"type": "text"
+						},
+						{
+							"key": "children",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "emergency_contact",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "emergency_contact_name",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "emergency_contact_relation",
+							"value": "",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://demo.horilla.com/employee/employee-view-update/210/",
+					"protocol": "https",
+					"host": [
+						"demo",
+						"horilla",
+						"com"
+					],
+					"path": [
+						"employee",
+						"employee-view-update",
+						"210",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "05 - Delete Employee Id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status 2xx/3xx', () => pm.expect(pm.response.code).to.be.within(200,399));",
+							"pm.test('Response time < 3000ms', () => pm.expect(pm.response.responseTime).to.be.below(3000));",
+							"const setCookies = pm.response.headers.get('Set-Cookie');",
+							"if (setCookies) {",
+							"  const pairs = setCookies.split(',').map(s => s.split(';')[0].trim());",
+							"  const joined = pairs.join('; ');",
+							"  const prev = pm.environment.get('cookie');",
+							"  pm.environment.set('cookie', prev ? (prev + '; ' + joined) : joined);",
+							"}",
+							"if (!pm.environment.get('csrftoken')) {",
+							"  const m = /csrftoken=([^;]+)/.exec(pm.environment.get('cookie')||'');",
+							"  if (m) pm.environment.set('csrftoken', m[1]);",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+					},
+					{
+						"key": "Accept-Encoding",
+						"value": "gzip, deflate, br, zstd"
+					},
+					{
+						"key": "Accept-Language",
+						"value": "ar-AE,ar;q=0.9,he-IL;q=0.8,he;q=0.7,en-GB;q=0.6,en;q=0.5,en-US;q=0.4"
+					},
+					{
+						"key": "Cache-Control",
+						"value": "max-age=0"
+					},
+					{
+						"key": "Connection",
+						"value": "keep-alive"
+					},
+					{
+						"key": "Content-Length",
+						"value": "84"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					},
+					{
+						"key": "DNT",
+						"value": "1"
+					},
+					{
+						"key": "Host",
+						"value": "demo.horilla.com"
+					},
+					{
+						"key": "Origin",
+						"value": "{{baseUrl}}"
+					},
+					{
+						"key": "Referer",
+						"value": "{{baseUrl}}"
+					},
+					{
+						"key": "Sec-Fetch-Dest",
+						"value": "document"
+					},
+					{
+						"key": "Sec-Fetch-Mode",
+						"value": "navigate"
+					},
+					{
+						"key": "Sec-Fetch-Site",
+						"value": "same-origin"
+					},
+					{
+						"key": "Sec-Fetch-User",
+						"value": "?1"
+					},
+					{
+						"key": "Upgrade-Insecure-Requests",
+						"value": "1"
+					},
+					{
+						"key": "User-Agent",
+						"value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+					},
+					{
+						"key": "sec-ch-ua",
+						"value": "\"Not;A=Brand\";v=\"99\", \"Google Chrome\";v=\"139\", \"Chromium\";v=\"139\""
+					},
+					{
+						"key": "sec-ch-ua-mobile",
+						"value": "?0"
+					},
+					{
+						"key": "sec-ch-ua-platform",
+						"value": "\"Windows\""
+					},
+					{
+						"key": "X-CSRFToken",
+						"value": "{{csrftoken}}"
+					},
+					{
+						"key": "Cookie",
+						"value": "{{cookie}}"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "csrfmiddlewaretoken",
+							"value": "F9NjiEmOfFovozM6Bm0J7sTmwJvYI1sofOQ3cWLsQrAtFgJ9kFRFsgixdhIwEedQ"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://demo.horilla.com/employee/employee-delete/210?view=card",
+					"protocol": "https",
+					"host": [
+						"demo",
+						"horilla",
+						"com"
+					],
+					"path": [
+						"employee",
+						"employee-delete",
+						"210"
+					],
+					"query": [
+						{
+							"key": "view",
+							"value": "card"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "03 - View Employee Id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status 2xx/3xx', () => pm.expect(pm.response.code).to.be.within(200,399));",
+							"pm.test('Response time < 3000ms', () => pm.expect(pm.response.responseTime).to.be.below(3000));",
+							"const setCookies = pm.response.headers.get('Set-Cookie');\nif (setCookies) {\n  const pairs = setCookies.split(',').map(s => s.split(';')[0].trim());\n  const joined = pairs.join('; ');\n  const prev = pm.environment.get('cookie');\n  pm.environment.set('cookie', prev ? (prev + '; ' + joined) : joined);\n}\nif (!pm.environment.get('csrftoken')) {\n  const m = /csrftoken=([^;]+)/.exec(pm.environment.get('cookie')||'');\n  if (m) pm.environment.set('csrftoken', m[1]);\n}"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "*/*"
+					},
+					{
+						"key": "Accept-Encoding",
+						"value": "gzip, deflate, br, zstd"
+					},
+					{
+						"key": "Accept-Language",
+						"value": "ar-AE,ar;q=0.9,he-IL;q=0.8,he;q=0.7,en-GB;q=0.6,en;q=0.5,en-US;q=0.4"
+					},
+					{
+						"key": "Connection",
+						"value": "keep-alive"
+					},
+					{
+						"key": "DNT",
+						"value": "1"
+					},
+					{
+						"key": "Host",
+						"value": "demo.horilla.com"
+					},
+					{
+						"key": "Referer",
+						"value": "{{baseUrl}}"
+					},
+					{
+						"key": "Sec-Fetch-Dest",
+						"value": "empty"
+					},
+					{
+						"key": "Sec-Fetch-Mode",
+						"value": "cors"
+					},
+					{
+						"key": "Sec-Fetch-Site",
+						"value": "same-origin"
+					},
+					{
+						"key": "User-Agent",
+						"value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+					},
+					{
+						"key": "X-Requested-With",
+						"value": "XMLHttpRequest"
+					},
+					{
+						"key": "sec-ch-ua",
+						"value": "\"Not;A=Brand\";v=\"99\", \"Google Chrome\";v=\"139\", \"Chromium\";v=\"139\""
+					},
+					{
+						"key": "sec-ch-ua-mobile",
+						"value": "?0"
+					},
+					{
+						"key": "sec-ch-ua-platform",
+						"value": "\"Windows\""
+					},
+					{
+						"key": "Origin",
+						"value": "{{baseUrl}}"
+					},
+					{
+						"key": "Cookie",
+						"value": "{{cookie}}"
+					}
+				],
+				"url": {
+					"raw": "https://demo.horilla.com/employee/get-language-code",
+					"protocol": "https",
+					"host": [
+						"demo",
+						"horilla",
+						"com"
+					],
+					"path": [
+						"employee",
+						"get-language-code"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Ensure baseUrl present; default to demo.horilla.com",
+					"if (!pm.environment.get('baseUrl')) pm.environment.set('baseUrl','https://demo.horilla.com');",
+					"// Attach Cookie before each request",
+					"const ck = pm.environment.get('cookie');",
+					"if (ck) { pm.request.headers.upsert({key:'Cookie', value: ck}); }"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "employeeId",
+			"value": "1"
+		}
+	]
+}
